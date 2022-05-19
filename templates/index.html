@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>Numerical Methods - Calculator</title>
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/128/1739/1739515.png">
+    <style>
+        body {
+            background-color: lightblue;
+            background-image: url(/static/Venice.jpg);
+        }
+        #langrange_input_container input{
+            margin: 5px;
+        }
+        #stirling_input_container input{
+            margin: 5px;
+        }
+        #bessel_input_container input{
+            margin: 5px;
+        }
+
+    </style>
+    <script type='text/javascript'>
+        function addFields(input_container) {
+            // Generate a dynamic number of inputs
+            if(input_container == 'langrange_input_container'){
+                var number = document.getElementById("langrange_datapoints").value;
+            }else if(input_container == 'stirling_input_container'){
+                var number = document.getElementById("stirling_datapoints").value;
+            }else if(input_container == 'bessel_input_container'){
+                var number = document.getElementById("bessel_datapoints").value;
+            }
+            // Get the element where the inputs will be added to
+            var container = document.getElementById(input_container);
+            // Remove every children it had before
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild);
+            }
+            for (i = 0; i < number; i++) {
+                // Append a node with a random text
+                container.appendChild(document.createTextNode("x " + i));
+                // Create an <input> element, set its type and name attributes
+                var input = document.createElement("input");
+                input.type = "number";
+                input.name = "x" + i;
+                container.appendChild(input);
+
+
+                container.appendChild(document.createTextNode("y " + i));
+                // Create an <input> element, set its type and name attributes
+                var input = document.createElement("input");
+                input.type = "number";
+                input.name = "y" + i;
+                container.appendChild(input);
+
+                // Append a line break 
+                container.appendChild(document.createElement("br"));
+            }
+        }
+    </script>
+</head>
+
+<body>
+    {% if error %}
+    <div class="alert alert-warning alert-dismissible fade show position-absolute w-100" style="z-index: 10;"
+        role="alert">
+        <strong>{{error}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Numerical Methods</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#bisection"><u>Bisection</u></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#newtonRaphson"><u>Newton Raphson</u></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#secant"><u>Secant</u></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#regulaFalsi"><u>Regula Falsi</u></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#fixedpoint"><u>Simple Iteration</u></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#euler"><u>Euler</u></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#trapezoidal"><u>Trapezoidal Integ.</u></a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            More Methods
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="#langrange">Langrange Method</a></li>
+                            <li><a class="dropdown-item" href="#simpson13">Simpson's 1/3 Rule</a></li>
+                            <li><a class="dropdown-item" href="#simpson38">Simpson's 3/8 Rule</a></li>
+                            <li><a class="dropdown-item" href="#rk4">Runge Kutta 4</a></li>
+                            <li><a class="dropdown-item" href="#weddle">Weddle's Rule</a></li>
+                            <li><a class="dropdown-item" href="#boole">Boole's Rule</a></li>
+                            <li><a class="dropdown-item" href="#stirling">Stirling's Interpolation</a></li>
+                            <li><a class="dropdown-item" href="#bessel">Bessel's Interpolation</a></li>
+                            <li><a class="dropdown-item" href="#rk2">Runge Kutta 2</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#">Something else</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <form class="d-flex">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <div class="mt-3 mb-3 col-md-6 col-sm-12 mx-auto">
+            <h5 class="text-danger">Input Guidelines</h5>
+            <p>1. Use brackets to separate the different parts of the expression. (Recommended)</p>
+            <p>2. Two asteriskis are used for exponent as follows: </p>
+            <pre class="ms-4">x<sup>3</sup> - x<sup>2</sup> + 2  =  x**3 - x**2 + 2</pre>
+            <pre class="ms-4">x<sup>3</sup> - 2x<sup>2</sup> + x - 1  =  x**3 + 2x**2 + x - 1</pre>
+            <p>3. Tolerable Error can be a float or in Scientific Notation such as:</p>
+            <pre class="ms-4">0.0001   OR   10-E5   OR   10-e5</pre>
+            <pre class="ms-4">(All are correct)</pre>
+        </div>
+        <hr>
+        <form action="" method="POST" id="bisection">
+            <h2 class="text-center mt-3">
+                1 - Bisection Method
+            </h2>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Function</span>
+                        <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                            aria-describedby="basic-addon1" name="function" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Lower Bound Guess</span>
+                        <input type="number" class="form-control" placeholder="a" aria-label="Function"
+                            aria-describedby="basic-addon1" name="value1" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Upper Bound Guess</span>
+                        <input type="number" class="form-control" placeholder="b" aria-label="Function"
+                            aria-describedby="basic-addon1" name="value2" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Tolerable Error: </span>
+                        <input type="text" class="form-control" placeholder="eps" aria-label="Function"
+                            aria-describedby="basic-addon1" name="eps" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Max Iterations</span>
+                        <input type="number" class="form-control" placeholder="Enter value" aria-label="Function"
+                            aria-describedby="basic-addon1" name="iter" required>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" value="bisection" name="method">
+            <div class="row">
+                <div class="d-grid col-6 mx-auto">
+                    <input class="btn btn-outline-success" type="submit" value="Calculate">
+                </div>
+            </div>
+
+        </form>
+
+        {% if bisection_input %}
+        <div class="col-md-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+            <h6>Function: {{bisection_input['function']}}</h6>
+            <h6>Initial Guess (a): {{bisection_input['value1']}}</h6>
+            <h6>Initial Guess (b): {{bisection_input['value2']}}</h6>
+            <h6>Tolerable Error: {{bisection_input['eps']}}</h6>
+            <h6>Max Iterartions: {{bisection_input['iter']}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+            <h5>Approximate Root: {{bisection_root}}</h5>
+        </div>
+
+        <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+            <tr>
+                <th>Iteration</th>
+                <th>a</th>
+                <th>b</th>
+                <th>c</th>
+                <th>f(c)</th>
+            </tr>
+
+            {% for i in bisection_data['iter'] %}
+            <tr>
+                <td>{{bisection_data['iter'][i-1]}}</td>
+                <td>{{bisection_data['a'][i-1]}}</td>
+                <td>{{bisection_data['b'][i-1]}}</td>
+                <td>{{bisection_data['c'][i-1]}}</td>
+                <td>{{bisection_data['f(c)'][i-1]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        <hr>
+
+        <form action="" method="POST" class="mt-4 mb-4" id="newtonRaphson">
+            <h2 class="text-center mt-3">
+                2 - Newton Raphson Method
+            </h2>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Function</span>
+                        <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                            aria-describedby="basic-addon1" name="function" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Initial Guess</span>
+                        <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                            aria-describedby="basic-addon1" name="guess" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Tolerable Error</span>
+                        <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                            aria-describedby="basic-addon1" name="tolerable_err" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Max Iterations</span>
+                        <input type="number" class="form-control" placeholder="Enter Value" aria-label="Function"
+                            aria-describedby="basic-addon1" name="iter" required>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" value="newtonRaphson" name="method">
+
+            <div class="row">
+                <div class="d-grid col-md-6 mx-auto">
+                    <input class="btn btn-outline-success" type="submit" value="Calculate">
+                </div>
+            </div>
+
+        </form>
+
+
+
+        {% if newton_raphs_input %}
+        <div class="col-md-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+            <h6>Function: {{newton_raphs_input['function']}}</h6>
+            <h6>Derivative: {{derivative}}</h6>
+            <h6>Initial Guess: {{newton_raphs_input['guess']}}</h6>
+            <h6>Tolerable Error: {{newton_raphs_input['tolerable_err']}}</h6>
+            <h6>Max Iterartions: {{newton_raphs_input['iter']}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+            <h5>Approximate Root: {{newton_raphs_root}}</h5>
+        </div>
+
+        <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+            <tr>
+                <th>Iteration</th>
+                <th>x</th>
+                <th>f(x)</th>
+                <th>f'(x)</th>
+            </tr>
+
+            {% for i in newton_raphs_data['iter'] %}
+            <tr>
+                <td>{{newton_raphs_data['iter'][i-1]}}</td>
+                <td>{{newton_raphs_data['x'][i-1]}}</td>
+                <td>{{newton_raphs_data['f(x)'][i-1]}}</td>
+                <td>{{newton_raphs_data["f'(x)"][i-1]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+
+        <hr>
+
+        <form action="" method="POST" class="mt-4 mb-4" id="secant">
+            <h2 class="text-center mt-3">
+                3 - Secant Method
+            </h2>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Function</span>
+                        <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                            aria-describedby="basic-addon1" name="function" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Lower Bound Guess</span>
+                        <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                            aria-describedby="basic-addon1" name="guess1" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Upper Bound Guess</span>
+                        <input type="number" class="form-control" placeholder="x1" aria-label="Function"
+                            aria-describedby="basic-addon1" name="guess2" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Tolerable Error</span>
+                        <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                            aria-describedby="basic-addon1" name="tolerable_err" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Max Iterations</span>
+                        <input type="number" class="form-control" placeholder="Enter Value" aria-label="Function"
+                            aria-describedby="basic-addon1" name="iter" required>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" value="secant" name="method">
+
+            <div class="row">
+                <div class="d-grid col-md-6 col-sm-12 mx-auto">
+                    <input class="btn btn-outline-success" type="submit" value="Calculate">
+                </div>
+            </div>
+
+        </form>
+
+
+
+        {% if secant_input %}
+        <div class="col-md-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+            <h6>Function: {{secant_input['function']}}</h6>
+            <h6>Initial Guess: {{secant_input['guess1']}}</h6>
+            <h6>Initial Guess: {{secant_input['guess2']}}</h6>
+            <h6>Tolerable Error: {{secant_input['tolerable_err']}}</h6>
+            <h6>Max Iterartions: {{secant_input['iter']}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+            <h5>Approximate Root: {{secant_root}}</h5>
+        </div>
+
+        <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+            <tr>
+                <th>Iteration</th>
+                <th>x2</th>
+                <th>f(x2)</th>
+            </tr>
+
+            {% for i in secant_data['iter'] %}
+            <tr>
+                <td>{{secant_data['iter'][i-1]}}</td>
+                <td>{{secant_data['x2'][i-1]}}</td>
+                <td>{{secant_data['f(x2)'][i-1]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+
+        <hr>
+
+        <form action="" method="POST" class="mt-4 mb-4" id="regulaFalsi">
+            <h2 class="text-center mt-3">
+                4 - Regula Falsi Method
+            </h2>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Function</span>
+                        <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                            aria-describedby="basic-addon1" name="function" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Lower Bound Guess</span>
+                        <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                            aria-describedby="basic-addon1" name="guess1" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Upper Bound Guess</span>
+                        <input type="number" class="form-control" placeholder="x1" aria-label="Function"
+                            aria-describedby="basic-addon1" name="guess2" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Tolerable Error</span>
+                        <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                            aria-describedby="basic-addon1" name="tolerable_err" required>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" value="falsi" name="method">
+
+            <div class="row">
+                <div class="d-grid col-md-6 col-sm-12 mx-auto">
+                    <input class="btn btn-outline-success" type="submit" value="Calculate">
+                </div>
+            </div>
+
+        </form>
+
+
+
+        {% if falsi_input %}
+        <div class="col-md-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+            <h6>Function: {{falsi_input['function']}}</h6>
+            <h6>Initial Guess (x0): {{falsi_input['guess1']}}</h6>
+            <h6>Initial Guess (x1): {{falsi_input['guess2']}}</h6>
+            <h6>Tolerable Error: {{falsi_input['tolerable_err']}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+            <h5>Approximate Root: {{falsi_root}}</h5>
+        </div>
+
+        <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+            <tr>
+                <th>Iteration</th>
+                <th>x2</th>
+                <th>f(x2)</th>
+            </tr>
+            {% for i in falsi_data['iter'] %}
+            <tr>
+                <td>{{falsi_data['iter'][i-1]}}</td>
+                <td>{{falsi_data['x2'][i-1]}}</td>
+                <td>{{falsi_data['f(x2)'][i-1]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        <hr>
+
+        <form action="" method="POST" class="mt-4 mb-4" id="fixedpoint">
+            <h2 class="text-center mt-3">
+                5 - Simple Iteration Method
+            </h2>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 mx-auto">
+                    <div class="input-group mb-3 mt-3">
+                        <span class="input-group-text" id="basic-addon1">Function</span>
+                        <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                            aria-describedby="basic-addon1" name="function" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 col-sm-12 mx-auto">
+                        <div class="input-group mb-3 mt-3">
+                            <span class="input-group-text" id="basic-addon1">Initial Guess</span>
+                            <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                                aria-describedby="basic-addon1" name="guess" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 col-sm-12 mx-auto">
+                        <div class="input-group mb-3 mt-3">
+                            <span class="input-group-text" id="basic-addon1">Tolerable Error</span>
+                            <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                                aria-describedby="basic-addon1" name="tolerable_err" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 col-sm-12 mx-auto">
+                        <div class="input-group mb-3 mt-3">
+                            <span class="input-group-text" id="basic-addon1">Max Iterations</span>
+                            <input type="number" class="form-control" placeholder="Enter Value" aria-label="Function"
+                                aria-describedby="basic-addon1" name="iter" required>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" value="fixedpoint" name="method">
+
+                <div class="row">
+                    <div class="d-grid col-md-6 mx-auto">
+                        <input class="btn btn-outline-success" type="submit" value="Calculate">
+                    </div>
+                </div>
+
+        </form>
+
+
+
+        {% if fixedpoint_input %}
+        <div class="col-sm-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+            <h6>Function: {{fixedpoint_input['function']}}</h6>
+            <h6>Initial Guess: {{fixedpoint_input['guess']}}</h6>
+            <h6>Tolerable Error: {{fixedpoint_input['tolerable_err']}}</h6>
+            <h6>Max Iterartions: {{fixedpoint_input['iter']}}</h6>
+        </div>
+
+        <div class="col-sm-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+            <h5>Approximate Root: {{fixedpoint_root}}</h5>
+        </div>
+
+        <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+            <tr>
+                <th>Iteration</th>
+                <th>x</th>
+                <th>f(x)</th>
+            </tr>
+
+            {% for i in fixedpoint_data['iter'] %}
+            <tr>
+                <td>{{fixedpoint_data['iter'][i-1]}}</td>
+                <td>{{fixedpoint_data['x'][i-1]}}</td>
+                <td>{{fixedpoint_data['f(x)'][i-1]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+    </div>
+
+    <hr>
+
+    <form action="" method="POST" id="euler">
+        <h2 class="text-center mt-3">
+            6 - Euler Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Function</span>
+                    <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                        aria-describedby="basic-addon1" name="function" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Initial condition</span>
+                    <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="value1" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Initial condition</span>
+                    <input type="number" class="form-control" placeholder="y0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="value2" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Calculation point (e.g 1) </span>
+                    <input type="number" class="form-control" placeholder="Enter a value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="xn" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Max Iterations</span>
+                    <input type="number" class="form-control" placeholder="Enter value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="iter" required>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" value="euler" name="method">
+        <div class="row">
+            <div class="d-grid col-6 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+    {% if euler_input %}
+    <div class="col-md-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+        <h6>Function: {{euler_input['function']}}</h6>
+        <h6>Initial Condition (x0): {{euler_input['value1']}}</h6>
+        <h6>Initial Condition (y0): {{euler_input['value2']}}</h6>
+        <h6>Max Iterartions: {{euler_input['xn']}}</h6>
+        <h6>Max Iterartions: {{euler_input['iter']}}</h6>
+    </div>
+
+    <div class="col-md-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+        <h5>At x = {{xn}} and y = {{yn}}</h5>
+    </div>
+
+    <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+        <tr>
+            <th>Iteration</th>
+            <th>x0</th>
+            <th>y0</th>
+            <th>slope</th>
+            <th>yn</th>
+        </tr>
+
+        {% for i in euler_data['iter'] %}
+        <tr>
+            <td>{{euler_data['iter'][i-1]}}</td>
+            <td>{{euler_data['x0'][i-1]}}</td>
+            <td>{{euler_data['y0'][i-1]}}</td>
+            <td>{{euler_data['slope'][i-1]}}</td>
+            <td>{{euler_data['yn'][i-1]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <hr>
+
+    <form action="" method="POST" class="mt-4 mb-4" id="trapezoidal">
+        <h2 class="text-center mt-3">
+            7 - Trapezoidal Integration Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Function</span>
+                    <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                        aria-describedby="basic-addon1" name="function" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Lower Limit (x0)</span>
+                    <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="x0" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Upper Limit (xn)</span>
+                    <input type="number" class="form-control" placeholder="xn" aria-label="Function"
+                        aria-describedby="basic-addon1" name="xn" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">No. of sub-intervals</span>
+                    <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="n" required>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" value="trapezoidal" name="method">
+
+        <div class="row">
+            <div class="d-grid col-md-6 col-sm-12 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+
+    {% if trapezoidal_input %}
+    <div class="border mt-2 mb-2 mb-3">
+        <div class="col-md-6 col-sm-12 mx-auto mt-2 mb-2">
+            <h6>Function: {{trapezoidal_input['function']}}</h6>
+            <h6>Lower Limit of Integration (x0): {{trapezoidal_input['x0']}}</h6>
+            <h6>Upper Limit of Integration (xn): {{trapezoidal_input['xn']}}</h6>
+            <h6>No. of sub-intervals (n): {{trapezoidal_input['n']}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-1 mb-2 text-success">
+            <h5>Integration Result by Trapezoidal Method = {{trapezoidal_result}}</h5>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <form action="" method="POST" class="mt-4" id="langrange">
+        <h2 class="text-center mt-3">
+            8 - Langrange Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <input class="form-control mt-3" type="number" id="langrange_datapoints" name="datapoints"
+                    placeholder="Enter No. of Datapoints" required><br />
+                <a class="btn btn-success" href="#langrange" onclick="addFields('langrange_input_container')">Submit the value</a>
+                <div class="justify-content-center m-2" id="langrange_input_container" />
+            </div>
+        </div>
+
+        <input type="hidden" value="langrange" name="method">
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Interpolation Point</span>
+                    <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="xp" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="d-grid col-md-6 col-sm-12 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+
+    {% if langrange_input %}
+    <div class="border mt-2 mb-2 mb-3">
+        <div class="col-md-6 col-sm-12 mx-auto mt-1 mb-2 text-success">
+            <h5>Langrange Interpolated Value at {{xp}} is {{yp}}</h5>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr class="mt-4">
+
+    <form action="" method="POST" class="mt-4 mb-4" id="simpson13">
+        <h2 class="text-center mt-3">
+            9 - Simpson's 1/3 Rule Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Function</span>
+                    <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                        aria-describedby="basic-addon1" name="function" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Lower Limit (x0)</span>
+                    <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="x0" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Upper Limit (xn)</span>
+                    <input type="number" class="form-control" placeholder="xn" aria-label="Function"
+                        aria-describedby="basic-addon1" name="xn" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">No. of sub-intervals</span>
+                    <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="n" required>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" value="simpson13" name="method">
+
+        <div class="row">
+            <div class="d-grid col-md-6 col-sm-12 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+
+    {% if simpson13_input %}
+    <div class="border mt-2 mb-2 mb-3">
+        <div class="col-md-6 col-sm-12 mx-auto mt-2 mb-2">
+            <h6>Function: {{simpson13_input['function']}}</h6>
+            <h6>Lower Limit of Integration (x0): {{simpson13_input['x0']}}</h6>
+            <h6>Upper Limit of Integration (xn): {{simpson13_input['xn']}}</h6>
+            <h6>No. of sub-intervals (n): {{simpson13_input['n']}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-1 mb-2 text-success">
+            <h5>Integration Result by Simpson's 1/3 Method = {{simpson13_result}}</h5>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <form action="" method="POST" class="mt-4 mb-4" id="simpson38">
+        <h2 class="text-center mt-3">
+            10 - Simpson's 3/8 Rule Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Function</span>
+                    <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                        aria-describedby="basic-addon1" name="function" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Lower Limit (x0)</span>
+                    <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="x0" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Upper Limit (xn)</span>
+                    <input type="number" class="form-control" placeholder="xn" aria-label="Function"
+                        aria-describedby="basic-addon1" name="xn" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">No. of sub-intervals</span>
+                    <input type="text" class="form-control" placeholder="Enter Value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="n" required>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" value="simpson38" name="method">
+
+        <div class="row">
+            <div class="d-grid col-md-6 col-sm-12 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+
+    {% if simpson38_input %}
+    <div class="border mt-2 mb-2 mb-3">
+        <div class="col-md-6 col-sm-12 mx-auto mt-2 mb-2">
+            <h6>Function: {{simpson38_input['function']}}</h6>
+            <h6>Lower Limit of Integration (x0): {{simpson38_input['x0']}}</h6>
+            <h6>Upper Limit of Integration (xn): {{simpson38_input['xn']}}</h6>
+            <h6>No. of sub-intervals (n): {{simpson38_input['n']}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-1 mb-2 text-success">
+            <h5>Integration Result by Simpson's 3/8 Method = {{simpson38_result}}</h5>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <form action="" method="POST" id="rk4">
+        <h2 class="text-center mt-3">
+            11 - Runge Kutta 4 Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Function</span>
+                    <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                        aria-describedby="basic-addon1" name="function" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Initial condition</span>
+                    <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="value1" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Initial condition</span>
+                    <input type="number" class="form-control" placeholder="y0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="value2" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Calculation point (e.g 1) </span>
+                    <input type="number" class="form-control" placeholder="Enter a value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="xn" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Max Iterations</span>
+                    <input type="number" class="form-control" placeholder="Enter value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="iter" required>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" value="rk4" name="method">
+        <div class="row">
+            <div class="d-grid col-6 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+
+    {% if rk4_input %}
+    <div class="col-md-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+        <h6>Function: {{rk4_input['function']}}</h6>
+        <h6>Initial Condition (x0): {{rk4_input['value1']}}</h6>
+        <h6>Initial Condition (y0): {{rk4_input['value2']}}</h6>
+        <h6>Max Iterartions: {{rk4_input['xn']}}</h6>
+        <h6>Max Iterartions: {{rk4_input['iter']}}</h6>
+    </div>
+
+    <div class="col-md-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+        <h5>At x = {{xn}} and y = {{yn}}</h5>
+    </div>
+
+    <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+        <tr>
+            <th>Iteration</th>
+            <th>x0</th>
+            <th>y0</th>
+            <th>yn</th>
+        </tr>
+
+        {% for i in rk4_data['iter'] %}
+        <tr>
+            <td>{{rk4_data['iter'][i-1]}}</td>
+            <td>{{rk4_data['x0'][i-1]}}</td>
+            <td>{{rk4_data['y0'][i-1]}}</td>
+            <td>{{rk4_data['yn'][i-1]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <hr class="mt-4">
+
+    <form action="" method="POST" class="mt-4 mb-4" id="trapezoidal">
+        <h2 class="text-center mt-3">
+            12 - Weddle's Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Function</span>
+                    <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                        aria-describedby="basic-addon1" name="function" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Lower Limit (a)</span>
+                    <input type="number" class="form-control" placeholder="Enter a Value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="a" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Upper Limit (b)</span>
+                    <input type="number" class="form-control" placeholder="Enter a Value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="b" required>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" value="weddle" name="method">
+
+        <div class="row">
+            <div class="d-grid col-md-6 col-sm-12 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+
+    {% if weddle_output %}
+    <div class="border mt-2 mb-2 mb-3">
+        <div class="col-md-6 col-sm-12 mx-auto mt-2 mb-2">
+            <h6>Function: {{function}}</h6>
+            <h6>Lower Limit of Integration (a): {{a}}</h6>
+            <h6>Upper Limit of Integration (b): {{b}}</h6>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mx-auto mt-1 mb-2 text-success">
+            <h5>Integration Result by Weddle Rule = {{weddle_output}}</h5>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <form action="" method="POST" id="rk2">
+        <h2 class="text-center mt-3">
+            15 - Runge Kutta 2 Method
+        </h2>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Function</span>
+                    <input type="text" class="form-control" placeholder="f(x)" aria-label="Function"
+                        aria-describedby="basic-addon1" name="function" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Initial condition</span>
+                    <input type="number" class="form-control" placeholder="x0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="value1" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Initial condition</span>
+                    <input type="number" class="form-control" placeholder="y0" aria-label="Function"
+                        aria-describedby="basic-addon1" name="value2" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Calculation point (e.g 1) </span>
+                    <input type="number" class="form-control" placeholder="Enter a value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="xn" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mx-auto">
+                <div class="input-group mb-3 mt-3">
+                    <span class="input-group-text" id="basic-addon1">Gap (h) </span>
+                    <input type="text" class="form-control" placeholder="Enter a value" aria-label="Function"
+                        aria-describedby="basic-addon1" name="h" required>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" value="rk2" name="method">
+
+        <div class="row">
+            <div class="d-grid col-6 mx-auto">
+                <input class="btn btn-outline-success" type="submit" value="Calculate">
+            </div>
+        </div>
+
+    </form>
+
+    {% if rk2_input %}
+    <div class="col-md-6 col-sm-12 mx-auto mt-4 mb-4 border p-3">
+        <h6>Function: {{rk2_input['function']}}</h6>
+        <h6>Initial Condition (x0): {{rk2_input['value1']}}</h6>
+        <h6>Initial Condition (y0): {{rk2_input['value2']}}</h6>
+        <h6>Gap (h): {{rk2_input['h']}}</h6>
+    </div>
+
+    <div class="col-md-6 col-sm-12 mx-auto mt-3 mb-3 p-3 text-success">
+        <h5>At x = {{xn}} and y = {{yn}}</h5>
+    </div>
+
+    <table class="table table-striped table-hover w-75 mx-auto mt-4 mb-3 table-bordered border-dark">
+        <tr>
+            <th>Iteration</th>
+            <th>x0</th>
+            <th>y0</th>
+            <th>Slope</th>
+            <th>yn</th>
+        </tr>
+
+        {% for i in rk2_data['iter'] %}
+        <tr>
+            <td>{{rk2_data['iter'][i-1]}}</td>
+            <td>{{rk2_data['x0'][i-1]}}</td>
+            <td>{{rk2_data['y0'][i-1]}}</td>
+            <td>{{rk2_data['slope'][i-1]}}</td>
+            <td>{{rk2_data['yn'][i-1]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <!-- Footer Starts Here -->
+    <div class="container">
+        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+            <div class="col-md-6 col-sm-12 d-flex align-items-center">
+                <a href="/" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
+                        <path
+                            d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1 10.199l-3.64 1.801 3.64 1.796v2.204l-6-2.935v-2.131l6-2.934v2.199zm8 2.866l-6 2.935v-2.204l3.64-1.796-3.64-1.801v-2.199l6 2.935v2.13z" />
+                    </svg>
+                </a>
+                <span class="">&copy; 2022 - Muhammad Nadeem, 2019-CS-25(UET Lahore)</span>
+            </div>
+
+            <ul class="nav col-md-4 col-sm-12 justify-content-end list-unstyled d-flex">
+                <li class="ms-3"><a class="text-muted" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" viewBox="0 0 24 24">
+                            <path
+                                d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                        </svg></a></li>
+                <li class="ms-3"><a class="text-muted" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" viewBox="0 0 24 24">
+                            <path
+                                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-4.466 19.59c-.405.078-.534-.171-.534-.384v-2.195c0-.747-.262-1.233-.55-1.481 1.782-.198 3.654-.875 3.654-3.947 0-.874-.312-1.588-.823-2.147.082-.202.356-1.016-.079-2.117 0 0-.671-.215-2.198.82-.64-.18-1.324-.267-2.004-.271-.68.003-1.364.091-2.003.269-1.528-1.035-2.2-.82-2.2-.82-.434 1.102-.16 1.915-.077 2.118-.512.56-.824 1.273-.824 2.147 0 3.064 1.867 3.751 3.645 3.954-.229.2-.436.552-.508 1.07-.457.204-1.614.557-2.328-.666 0 0-.423-.768-1.227-.825 0 0-.78-.01-.055.487 0 0 .525.246.889 1.17 0 0 .463 1.428 2.688.944v1.489c0 .211-.129.459-.528.385-3.18-1.057-5.472-4.056-5.472-7.59 0-4.419 3.582-8 8-8s8 3.581 8 8c0 3.533-2.289 6.531-5.466 7.59z" />
+                        </svg></a></li>
+                <li class="ms-3"><a class="text-muted" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" viewBox="0 0 24 24">
+                            <path
+                                d="M15.233 5.488c-.843-.038-1.097-.046-3.233-.046s-2.389.008-3.232.046c-2.17.099-3.181 1.127-3.279 3.279-.039.844-.048 1.097-.048 3.233s.009 2.389.047 3.233c.099 2.148 1.106 3.18 3.279 3.279.843.038 1.097.047 3.233.047 2.137 0 2.39-.008 3.233-.046 2.17-.099 3.18-1.129 3.279-3.279.038-.844.046-1.097.046-3.233s-.008-2.389-.046-3.232c-.099-2.153-1.111-3.182-3.279-3.281zm-3.233 10.62c-2.269 0-4.108-1.839-4.108-4.108 0-2.269 1.84-4.108 4.108-4.108s4.108 1.839 4.108 4.108c0 2.269-1.839 4.108-4.108 4.108zm4.271-7.418c-.53 0-.96-.43-.96-.96s.43-.96.96-.96.96.43.96.96-.43.96-.96.96zm-1.604 3.31c0 1.473-1.194 2.667-2.667 2.667s-2.667-1.194-2.667-2.667c0-1.473 1.194-2.667 2.667-2.667s2.667 1.194 2.667 2.667zm4.333-12h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm.952 15.298c-.132 2.909-1.751 4.521-4.653 4.654-.854.039-1.126.048-3.299.048s-2.444-.009-3.298-.048c-2.908-.133-4.52-1.748-4.654-4.654-.039-.853-.048-1.125-.048-3.298 0-2.172.009-2.445.048-3.298.134-2.908 1.748-4.521 4.654-4.653.854-.04 1.125-.049 3.298-.049s2.445.009 3.299.048c2.908.133 4.523 1.751 4.653 4.653.039.854.048 1.127.048 3.299 0 2.173-.009 2.445-.048 3.298z" />
+                        </svg></a></li>
+                <li class="ms-3"><a class="text-muted" href="https://www.linkedin.com/in/nadeem5/"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path
+                                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                        </svg></a></li>
+            </ul>
+        </footer>
+    </div>
+
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+    -->
+</body>
+
+</html>
